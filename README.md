@@ -18,7 +18,8 @@ No API keys are included in this repository. It is BYOK: bring your own provider
 - Conservative image edits where layout preservation matters
 - Mask/inpaint style routing for strict localized edits
 - Text-to-video, image-to-video, reference-to-video, video remix, video extend, and video upscale routes
-- Prompt compilation for image and video families
+- Music generation, TTS/voice, 3D asset generation, and media utility routes
+- Prompt compilation for image, video, and specialist media families
 - Model catalog and routing docs generated from one manifest
 - Lightweight regression tests for routing behavior
 
@@ -43,6 +44,11 @@ AI GEN MAX centralizes those decisions in `scripts/model_manifest.py` and keeps 
 - Conservative edits: `flux-kontext-pro`
 - Default text-to-video lane: `kling`
 - Premium video lanes: `sora2`, `sora2-pro`, `veo3`, `veo3-hq`
+- Default full-song music lane: `diffrhythm-full`
+- Fast/flexible music lane: `ace-step`
+- TTS / voice lane: `f5-tts`
+- Default image-to-3D lane: `trellis2`
+- Utility lanes: `remove-bg`, `image-upscale`, `mmaudio`, `joycaption`
 
 ## Full Model Inventory
 
@@ -100,6 +106,24 @@ This is the visible inventory of currently mapped models. The generated source o
 | Lipsync | `sync-lipsync` | `fal-ai/sync-lipsync/v3` | Dedicated lipsync for video+audio tasks. |
 | Video upscale/enhance | `video-upscale` | provider utility lane | Improve the same rendered clip: upscale, denoise, sharpen, deblur, or reduce compression artifacts. |
 
+### Music, TTS, 3D, And Tool Models
+
+| Category / intent | model key | Provider endpoint | Current role |
+| --- | --- | --- | --- |
+| Full song / complete track | `diffrhythm-full` | `fal-ai/diffrhythm` | Default fuller song-like output when the user wants more than a short jingle. |
+| Music draft / fast iteration | `ace-step` | `fal-ai/ace-step` | Lower-cost flexible music generation and quick iteration. |
+| Music fallback | `diffrhythm-base` | `fal-ai/diffrhythm` | Cheaper DiffRhythm fallback for shorter or less premium music output. |
+| Music fallback via PiAPI | `udio` | `music-u` | Fallback music generation lane when PiAPI is preferred or fal lanes are not enough. |
+| Audio-to-audio music | `ace-step-a2a` | `fal-ai/ace-step` | Audio-guided music transformation and remix-style tasks. |
+| TTS / voice clone | `f5-tts` | `fal-ai/f5-tts` | Speech synthesis, zero-shot TTS, and voice-clone style tasks. |
+| Video sound design | `mmaudio` | `fal-ai/mmaudio-v2` | Generate or add audio for an existing video. |
+| Image-to-3D | `trellis2` | `fal-ai/trellis-2` | Default higher-quality route for GLB/mesh generation from a source image. |
+| Text-to-3D | `trellis-text` | `fal-ai/trellis` | Generate a 3D model from text when no reference image exists. |
+| 3D fallback | `trellis-image` / `trellis-multi` | `fal-ai/trellis` / `fal-ai/trellis/multi` | Fallback routes for image or multi-reference 3D generation. |
+| Background removal | `remove-bg` | `fal-ai/birefnet` | Utility cutout route for transparent-background extraction. |
+| Image upscale | `image-upscale` | `fal-ai/clarity-upscaler` | Utility route for resolution enhancement without regeneration. |
+| Image captioning | `joycaption` | `Qubico/joycaption` | Utility route for caption, description, alt text, and prompt extraction. |
+
 ## Route Categories And Adjustments
 
 These are the first-class routing categories exposed by the manifest.
@@ -133,6 +157,34 @@ These are the first-class routing categories exposed by the manifest.
 | `preserve_layout` | `veo3-first-last`, `veo3-extend`, `sync-lipsync` | Controlled interpolation, extension, and lipsync preserve source constraints. |
 | `social` | `pixverse-v6-i2v`, `pixverse-transition` | Social-native stylized motion gets its own lane. |
 | `stylized` | `grok-video`, `grok-video-ref` | Taste-first video routes to Grok video lanes. |
+
+### Music Route Categories
+
+| Route category | Primary model key | What changed / why it matters |
+| --- | --- | --- |
+| `best_quality` | `diffrhythm-full` | Full-song requests are first-class music routes, not generic audio/video requests. |
+| `balanced` | `ace-step` | Fast music iteration has its own lower-cost lane. |
+
+### TTS Route Categories
+
+| Route category | Primary model key | What changed / why it matters |
+| --- | --- | --- |
+| `preserve_subject` | `f5-tts` | Speech/voice-clone tasks route to a TTS lane instead of being treated as general audio. |
+
+### 3D Route Categories
+
+| Route category | Primary model key | What changed / why it matters |
+| --- | --- | --- |
+| `best_quality` | `trellis2` | Image-to-3D GLB/mesh output is a first-class route. |
+| `balanced` | `trellis-text` | Text-to-3D is kept separate from image-reference 3D generation. |
+
+### Tool Route Categories
+
+| Route category | Primary model key | What changed / why it matters |
+| --- | --- | --- |
+| `preserve_layout` | `remove-bg` | Background removal is handled as utility extraction, not a generative edit. |
+| `best_quality` | `image-upscale` | Upscaling/enhancement preserves the image instead of regenerating it. |
+| `balanced` | `mmaudio`, `joycaption` | Video audio generation and image captioning are explicit utility lanes. |
 
 Full generated docs:
 

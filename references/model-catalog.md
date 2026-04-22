@@ -53,6 +53,35 @@ Validated against official `fal.ai` docs on **2026-04-21**.
 | Grok Imagine Video Ref | `grok-video-ref` | `xai/grok-imagine-video/reference-to-video` | see fal | Reference-image video |
 | Sync Lipsync v3 | `sync-lipsync` | `fal-ai/sync-lipsync/v3` | see fal | Dedicated lipsync |
 
+## MUSIC first-class routes
+
+| Route | model key | resolved endpoint | provider | tier | Primary lane |
+| --- | --- | --- | --- | --- | --- |
+| music-default-full-song | `diffrhythm-full` | `fal-ai/diffrhythm` | fal | premium | The user wants a fuller song-like result, not a tiny jingle. |
+| music-flexible-fast | `ace-step` | `fal-ai/ace-step` | fal | standard | You need flexible lower-cost music generation or fast iteration. |
+
+## TTS first-class routes
+
+| Route | model key | resolved endpoint | provider | tier | Primary lane |
+| --- | --- | --- | --- | --- | --- |
+| tts-voice-clone | `f5-tts` | `fal-ai/f5-tts` | fal | standard | The user wants speech synthesis, especially voice-clone or zero-shot style TTS. |
+
+## 3D first-class routes
+
+| Route | model key | resolved endpoint | provider | tier | Primary lane |
+| --- | --- | --- | --- | --- | --- |
+| 3d-image-to-model | `trellis2` | `fal-ai/trellis-2` | fal | premium | The user wants a 3D model from an image and quality matters. |
+| 3d-text-to-model | `trellis-text` | `fal-ai/trellis` | fal | standard | The user wants a 3D model from text only. |
+
+## TOOL first-class routes
+
+| Route | model key | resolved endpoint | provider | tier | Primary lane |
+| --- | --- | --- | --- | --- | --- |
+| tool-remove-background | `remove-bg` | `fal-ai/birefnet` | fal | specialist | The task is explicit background removal. |
+| tool-image-upscale | `image-upscale` | `fal-ai/clarity-upscaler` | fal | specialist | The task is explicit upscaling or resolution enhancement. |
+| tool-video-audio | `mmaudio` | `fal-ai/mmaudio-v2` | fal | specialist | The task is to add/generate audio for an existing video. |
+| tool-caption | `joycaption` | `Qubico/joycaption` | piapi | specialist | The user wants captioning/description for an image as a utility operation. |
+
 ## Official references
 
 - Nano Banana Pro: https://fal.ai/models/fal-ai/nano-banana-pro

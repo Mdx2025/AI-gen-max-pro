@@ -9,7 +9,8 @@ Operator-facing summary generated from the manifest on **2026-04-21**.
 - Keep `gpt-image-2` as the default quality-first image lane when the job is general image generation and the target is the strongest possible output.
 - Keep `nano-banana-2` as the fast workhorse when the job values iteration speed/cost over the quality ceiling.
 - Keep `kling` as the default text-to-video lane when the job is general motion with no specialist constraint.
-- Upgrade to specialist lanes only when the brief has a clear constraint: typography, vector, preserve-layout edit, multi-reference direction, physics realism, stylized social motion, lipsync, or utility tooling.
+- Route music, TTS, 3D, and utility requests through their own media types instead of squeezing them into image/video categories.
+- Upgrade to specialist lanes only when the brief has a clear constraint: typography, vector, preserve-layout edit, multi-reference direction, physics realism, stylized social motion, music generation, voice cloning, 3D asset generation, lipsync, or utility tooling.
 - Prefer explicit route IDs over hand-wavy "best model" language. The schema exists to turn intent into a repeatable choice, not to debate vibes every time.
 
 ## Image routing
@@ -55,6 +56,35 @@ Operator-facing summary generated from the manifest on **2026-04-21**.
 | stylized | `grok-video-ref` | `multi_image` | Stylized video generation steered by reference images. |
 | preserve_layout | `sync-lipsync` | `video+audio` | You need a person/character to speak to provided audio.; Dedicated lipsync beats overloading general video lanes. |
 
+## Music routing
+
+| Goal / lane | model key | input shape | Primary trigger |
+| --- | --- | --- | --- |
+| best_quality | `diffrhythm-full` | `none` | The user wants a fuller song-like result, not a tiny jingle. |
+| balanced | `ace-step` | `none` | You need flexible lower-cost music generation or fast iteration. |
+
+## TTS routing
+
+| Goal / lane | model key | input shape | Primary trigger |
+| --- | --- | --- | --- |
+| preserve_subject | `f5-tts` | `image+audio` | The user wants speech synthesis, especially voice-clone or zero-shot style TTS. |
+
+## 3D routing
+
+| Goal / lane | model key | input shape | Primary trigger |
+| --- | --- | --- | --- |
+| best_quality | `trellis2` | `single_image` | The user wants a 3D model from an image and quality matters. |
+| balanced | `trellis-text` | `none` | The user wants a 3D model from text only. |
+
+## Tool routing
+
+| Goal / lane | model key | input shape | Primary trigger |
+| --- | --- | --- | --- |
+| preserve_layout | `remove-bg` | `single_image` | The task is explicit background removal. |
+| best_quality | `image-upscale` | `single_image` | The task is explicit upscaling or resolution enhancement. |
+| balanced | `mmaudio` | `video_only` | The task is to add/generate audio for an existing video. |
+| balanced | `joycaption` | `single_image` | The user wants captioning/description for an image as a utility operation. |
+
 ## Decision heuristics
 
 - `logo`, `icon`, `brand`, `svg`, `vector` -> `recraft-v4-vector`
@@ -75,6 +105,14 @@ Operator-facing summary generated from the manifest on **2026-04-21**.
 - `stylized social`, `viral`, `anime motion` -> `pixverse-v6-i2v`
 - `transition reel` -> `pixverse-transition`
 - `lipsync`, `dub`, `make them talk` -> `sync-lipsync`
+- `song`, `full track`, `complete music` -> `diffrhythm-full`
+- `music bed`, `quick music`, `flexible music` -> `ace-step`
+- `tts`, `voice`, `speech`, `clone voice` -> `f5-tts`
+- `3d model`, `glb`, `mesh`, `object from image` -> `trellis2`
+- `text to 3d`, `generate 3d object` -> `trellis-text`
+- `remove background`, `transparent background`, `cutout` -> `remove-bg`
+- `upscale`, `enhance`, `increase resolution` -> `image-upscale`
+- `caption`, `describe image`, `alt text` -> `joycaption`
 
 ## Notes on evidence
 

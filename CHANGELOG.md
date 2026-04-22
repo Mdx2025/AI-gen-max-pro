@@ -7,6 +7,8 @@
 - Added GPT Image 2 / ChatGPT Images 2.0 as the default quality-first image route.
 - Added first-class GPT Image 2 edit routing through fal.ai.
 - Added route coverage for balanced image iteration, premium fallback, and lookdev edit decisions.
+- Added visible README coverage for music, TTS, 3D, and media utility categories.
+- Added generated model catalog and routing table coverage for non-image/video route families.
 - Added regression tests for GPT Image 2 default routing, edit endpoint mapping, balanced fallback routing, and premium lookdev routing.
 
 ### Changed
@@ -16,6 +18,7 @@
 - Kept `nano-banana-pro` as the premium fallback and Nano Banana-specific style lane.
 - Updated prompt compilation so GPT Image 2 uses the GPT Image prompt-adherence adapter.
 - Normalized GPT Image 2 parameters such as `aspect_ratio`, `quality`, and edit image inputs.
+- Updated public documentation so `music`, `tts`, `3d`, and `tool` categories are documented from the same manifest as `image` and `video`.
 - Regenerated `SKILL.md`, `references/model-catalog.md`, `references/routing-table.md`, and `references/routing-schema.md`.
 
 ## 2026-04-20

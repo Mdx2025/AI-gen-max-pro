@@ -44,8 +44,7 @@ def bullet_list(items: list[str]) -> str:
 
 def render_route_card(route: dict[str, object]) -> str:
     model_key = str(route["model_key"])
-    piapi_model = PIAPI_MODEL_MAP.get(model_key, {}).get("model")
-    model_id = FAL_MODEL_MAP.get(model_key, piapi_model or model_key)
+    model_id = resolve_model_id(model_key)
     fallback_model_keys = [str(item) for item in route.get("fallback_model_keys", [])]
     lines = [
         f"### `{route['route_id']}`",
@@ -73,6 +72,46 @@ def render_route_card(route: dict[str, object]) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def resolve_model_id(model_key: str) -> str:
+    piapi_model = PIAPI_MODEL_MAP.get(model_key, {}).get("model")
+    return FAL_MODEL_MAP.get(model_key, piapi_model or model_key)
+
+
+def route_rows(media_type: str) -> list[tuple[str, ...]]:
+    rows: list[tuple[str, ...]] = []
+    for route in ROUTING_SCHEMA[media_type]:
+        rows.append(
+            (
+                str(route["goal"]),
+                f"`{route['model_key']}`",
+                f"`{route['input_shape']}`",
+                "; ".join(str(item) for item in route["use_when"][:2]),
+            )
+        )
+    return rows
+
+
+def route_catalog_rows(media_type: str) -> list[tuple[str, ...]]:
+    rows: list[tuple[str, ...]] = []
+    for route in ROUTING_SCHEMA[media_type]:
+        model_key = str(route["model_key"])
+        rows.append(
+            (
+                str(route["route_id"]),
+                f"`{model_key}`",
+                f"`{resolve_model_id(model_key)}`",
+                str(route["provider"]),
+                str(route["quality_tier"]),
+                "; ".join(str(item) for item in route["use_when"][:2]),
+            )
+        )
+    return rows
+
+
+def media_heading(media_type: str) -> str:
+    return {"tts": "TTS", "3d": "3D"}.get(media_type, media_type.capitalize())
 
 
 def render_skill() -> str:
@@ -202,6 +241,21 @@ Validado contra documentación oficial de `fal.ai`: **{DOC_VALIDATED_AT}**
 def render_catalog() -> str:
     image_rows = [(name, f"`{key}`", f"`{model_id}`", price, lane) for name, key, model_id, price, lane in CATALOG_IMAGE_ROWS]
     video_rows = [(name, f"`{key}`", f"`{model_id}`", price, lane) for name, key, model_id, price, lane in CATALOG_VIDEO_ROWS]
+    route_sections: list[str] = []
+    for media_type in ("music", "tts", "3d", "tool"):
+        if media_type in ROUTING_SCHEMA:
+            route_sections.extend(
+                [
+                    f"## {media_type.upper()} first-class routes",
+                    "",
+                    table(
+                        ["Route", "model key", "resolved endpoint", "provider", "tier", "Primary lane"],
+                        route_catalog_rows(media_type),
+                    ),
+                    "",
+                ]
+            )
+    route_sections_text = "\n".join(route_sections).rstrip()
     return f"""# AI GEN MAX — Model Catalog
 
 Generated from `scripts/model_manifest.py`.
@@ -221,6 +275,8 @@ Validated against official `fal.ai` docs on **{DOC_VALIDATED_AT}**.
 
 {table(["Model", "model key", "fal model ID", "Price", "Primary lane"], video_rows)}
 
+{route_sections_text}
+
 ## Official references
 
 - Nano Banana Pro: {FAL_DOC_LINKS["nano-banana-pro"]}
@@ -233,27 +289,17 @@ Validated against official `fal.ai` docs on **{DOC_VALIDATED_AT}**.
 
 
 def render_routing_table() -> str:
-    image_rows = []
-    for route in ROUTING_SCHEMA["image"]:
-        image_rows.append(
-            (
-                str(route["goal"]),
-                f"`{route['model_key']}`",
-                f"`{route['input_shape']}`",
-                "; ".join(str(item) for item in route["use_when"][:2]),
-            )
+    routing_sections: list[str] = []
+    for media_type in ROUTING_SCHEMA:
+        routing_sections.extend(
+            [
+                f"## {media_heading(media_type)} routing",
+                "",
+                table(["Goal / lane", "model key", "input shape", "Primary trigger"], route_rows(media_type)),
+                "",
+            ]
         )
-
-    video_rows = []
-    for route in ROUTING_SCHEMA["video"]:
-        video_rows.append(
-            (
-                str(route["goal"]),
-                f"`{route['model_key']}`",
-                f"`{route['input_shape']}`",
-                "; ".join(str(item) for item in route["use_when"][:2]),
-            )
-        )
+    routing_sections_text = "\n".join(routing_sections).rstrip()
 
     return f"""# AI GEN MAX — Routing Table
 
@@ -266,16 +312,11 @@ Operator-facing summary generated from the manifest on **{DOC_VALIDATED_AT}**.
 - Keep `gpt-image-2` as the default quality-first image lane when the job is general image generation and the target is the strongest possible output.
 - Keep `nano-banana-2` as the fast workhorse when the job values iteration speed/cost over the quality ceiling.
 - Keep `kling` as the default text-to-video lane when the job is general motion with no specialist constraint.
-- Upgrade to specialist lanes only when the brief has a clear constraint: typography, vector, preserve-layout edit, multi-reference direction, physics realism, stylized social motion, lipsync, or utility tooling.
+- Route music, TTS, 3D, and utility requests through their own media types instead of squeezing them into image/video categories.
+- Upgrade to specialist lanes only when the brief has a clear constraint: typography, vector, preserve-layout edit, multi-reference direction, physics realism, stylized social motion, music generation, voice cloning, 3D asset generation, lipsync, or utility tooling.
 - Prefer explicit route IDs over hand-wavy "best model" language. The schema exists to turn intent into a repeatable choice, not to debate vibes every time.
 
-## Image routing
-
-{table(["Goal / lane", "model key", "input shape", "Primary trigger"], image_rows)}
-
-## Video routing
-
-{table(["Goal / lane", "model key", "input shape", "Primary trigger"], video_rows)}
+{routing_sections_text}
 
 ## Decision heuristics
 
@@ -297,6 +338,14 @@ Operator-facing summary generated from the manifest on **{DOC_VALIDATED_AT}**.
 - `stylized social`, `viral`, `anime motion` -> `pixverse-v6-i2v`
 - `transition reel` -> `pixverse-transition`
 - `lipsync`, `dub`, `make them talk` -> `sync-lipsync`
+- `song`, `full track`, `complete music` -> `diffrhythm-full`
+- `music bed`, `quick music`, `flexible music` -> `ace-step`
+- `tts`, `voice`, `speech`, `clone voice` -> `f5-tts`
+- `3d model`, `glb`, `mesh`, `object from image` -> `trellis2`
+- `text to 3d`, `generate 3d object` -> `trellis-text`
+- `remove background`, `transparent background`, `cutout` -> `remove-bg`
+- `upscale`, `enhance`, `increase resolution` -> `image-upscale`
+- `caption`, `describe image`, `alt text` -> `joycaption`
 
 ## Notes on evidence
 
