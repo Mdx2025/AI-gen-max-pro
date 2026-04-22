@@ -279,8 +279,8 @@ Operator-facing summary generated from the manifest on **{DOC_VALIDATED_AT}**.
 
 ## Decision heuristics
 
-- `logo`, `icon`, `brand`, `svg`, `vector` -> `recraft-v3`
-- `poster`, `headline`, `banner`, `text in image`, `typography` -> `ideogram-v2`
+- `logo`, `icon`, `brand`, `svg`, `vector` -> `recraft-v4-vector`
+- `poster`, `headline`, `banner`, `text in image`, `typography` -> `ideogram-v3`
 - `preserve layout`, `same framing`, `small edit`, `keep composition`, `remove object but keep framing` -> `flux-kontext-pro`
 - `formato original`, `encuadre original`, `no toques X`, `solo cambia la textura/fondo/plataforma` -> strict preservation lane only
 - `remove/delete/erase` + exact composition preservation -> conservative edit or inpaint semantics, not taste-first restyle
